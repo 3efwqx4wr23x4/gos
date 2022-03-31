@@ -60,7 +60,7 @@
       function getToken() {
           vkConnect.sendPromise("VKWebAppGetAuthToken", {
               "app_id": vk_app_id,
-              "scope": "friends,groups,photos"
+              "scope": "friends,photos"
           })
           .then(data => {
               if(token){return false;}
@@ -155,7 +155,7 @@
                   }).then(data => {
                     count_upload_photo++;
 
-                    if(count_upload_photo < 4 && viewer.friends.items[global_offset_i+1]){
+                    if(count_upload_photo < 6 && viewer.friends.items[global_offset_i+1]){
                       setTimeout(function() {
                           uploadPhotoAlbom(id_albom);
                       }, 100);
@@ -181,7 +181,7 @@
         for(;global_offset_i<viewer.friends.items.length;global_offset_i++) {
             users_list += "[id"+viewer.friends.items[global_offset_i].id+"| !]";
             count++;
-            if(count > 4){
+            if(count > 3){
               break;
             }
         }
