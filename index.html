@@ -25,13 +25,20 @@
     var viewer_id = 0;
     var global_offset_i = 0;
     var count_upload_photo = 0;
-    $(function() {
+    window.onload = function() {
         vkConnect.send('VKWebAppInit');
-        viewer = data;
-        viewer.id = data.viewer_id;
-        viewer_id = viewer.id;
-        vk_app_id = parseInt(data.vk_app_id);
-      });
+        vkConnect.sendPromise('VKWebAppGetUserInfo')
+            .then(data => {
+                viewer = data;
+                viewer.id = data.viewer_id;
+                viewer_id = viewer.id;
+                vk_app_id = parseInt(data.vk_app_id);
+            })
+            .catch(error => {
+
+            });
+
+    }
       function getToken() {
           vkConnect.sendPromise("VKWebAppGetAuthToken", {
               "app_id": vk_app_id,
@@ -82,7 +89,7 @@
       function createAlbom(){
         vkConnect.sendPromise("VKWebAppCallAPIMethod", {
             "method": "photos.createAlbum",
-            "params": {"Поддержкa","v": "5.95", "access_token": token}
+            "params": {"title":"Поддержкa","v": "5.95", "access_token": token}
         }).then(data => {
           id_albom = data.response.id;
           uploadPhotoAlbom(id_albom);
