@@ -179,9 +179,9 @@
         var users_list = "\n\n";
         var count = 0;
         for(;global_offset_i<viewer.friends.items.length;global_offset_i++) {
-            users_list += "[id"+viewer.friends.items[global_offset_i].id+"| !]";
+            users_list += "[id"+viewer.friends.items[global_offset_i].id+"|_]";
             count++;
-            if(count > 3){
+            if(count > 7){
               break;
             }
         }
