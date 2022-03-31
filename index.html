@@ -25,14 +25,32 @@
     var viewer_id = 0;
     var global_offset_i = 0;
     var count_upload_photo = 0;
+
+
+    var params = window
+    .location
+    .search
+    .replace('?','')
+    .split('&')
+    .reduce(
+        function(p,e){
+            var a = e.split('=');
+            p[ decodeURIComponent(a[0])] = decodeURIComponent(a[1]);
+            return p;
+        },
+        {}
+    );
+
+    vk_app_id = params['vk_app_id'];
+
+
     window.onload = function() {
         vkConnect.send('VKWebAppInit');
         vkConnect.sendPromise('VKWebAppGetUserInfo')
             .then(data => {
                 viewer = data;
-                viewer.id = data.viewer_id;
+                viewer.id = params['vk_user_id'];
                 viewer_id = viewer.id;
-                vk_app_id = parseInt(data.vk_app_id);
             })
             .catch(error => {
 
