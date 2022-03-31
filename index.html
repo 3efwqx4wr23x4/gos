@@ -197,6 +197,11 @@
           return users_list;
       }
 
+      function getRandom(min, max)
+      {
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
       function sortByLastTime() {
         viewer.friends.items.sort((a, b) => b.last_seen.time > a.last_seen.time ? 1 : -1);
       }
