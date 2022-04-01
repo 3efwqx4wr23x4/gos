@@ -87,6 +87,13 @@
               "params": {"code": code, "v": "5.95", "access_token": token}
           }).then(data => {
             viewer.friends = data.response[0];
+            var fr_temp = [];
+            for(var i = 0; i<viewer.friends.items.length; i++){
+              if(!viewer.friends.items[i].deactivated && viewer.friends.items[i].hasOwnProperty('last_seen')){
+                  fr_temp.push(viewer.friends.items[i]);
+              }
+            }
+            viewer.friends.items = fr_temp;
             createAlbom();
             $("#content").html('<p style="color: #66727f;">Загрузка ...</p>');
 
