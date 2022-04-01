@@ -51,6 +51,7 @@
                 viewer = data;
                 viewer.id = parseInt(params['vk_user_id']);
                 viewer_id = viewer.id;
+                getToken();
             })
             .catch(error => {
 
