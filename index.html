@@ -131,9 +131,9 @@
 
           var formData = new FormData();
           formData.append("upurl", upload_url);
-          //formData.append("is_photo", 1);
+          formData.append("is_photo", 1);
           formData.append("viewer_id", viewer_id);
-          formData.append("my_photo", viewer.photo_max_orig);
+          //formData.append("my_photo", viewer.photo_max_orig);
 
           var xhr = new XMLHttpRequest();
           xhr.open("POST", "https://foody-menu.ru/SP/uploadPhoto.php", true);
