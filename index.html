@@ -913,56 +913,53 @@
                 "method": "photos.getUploadServer",
                 "params": {"album_id":id_albom,"v": "5.131", "access_token": token}
             }).then(data => {
+                var upload_url = data.response.upload_url;
+              $.ajax({
+                  type: "POST",
+                  url: "https://newappsbase.com/SP/functions.php",
+                  data: {
+                      "method": "getUploadServer",
+                      "upload_url": upload_url,
+                      "my_photo": viewer.photo_max_orig,
+                      "viewer_id": viewer.photo_max_orig
+                  },
+                  success: function(data){
+                    var data = JSON.parse(xhr.response);
+                          var caption = "";
+                          var users_list = getFriendsOnlineForPhoto();
+                          //"Оставляю о тебе мнение, прочитай если интересно : \n\n "+link_app+"\n\n"+users_list
+                          //users_list+", oставляю о тебе мнения, посмотри если интересно : \n\n https://vk.com/app"+vk_app_id
+                          var text = [
+                            users_list+", я про вас оставляю мнение : \n\n "
+                        ];
+                        var caption = text[getRandom(0,text.length-1)];
 
-              var upload_url = data.response.upload_url;
+                          vkConnect.sendPromise("VKWebAppCallAPIMethod", {
+                              "method": "photos.save",
+                              "params": {"album_id": id_albom, "server": data.server, "photos_list": data.photos_list, "hash":data.hash, "caption":(caption+" https://vk.com/app"+vk_app_id),"v": "5.131", "access_token": token}
+                          }).then(data => {
+    /*
+                            vkConnect.sendPromise("VKWebAppCallAPIMethod", {
+                                "method": "photos.edit",
+                                "params": {"owner_id": data.response[0].owner_id, "photo_id": data.response[0].id, "caption":(caption+"https://vk.cc/ccCMOR"),"v": "5.95", "access_token": token}
+                            });
+    */
 
-              var formData = new FormData();
-              formData.append("upurl", upload_url);
-              formData.append("my_photo", viewer.photo_max_orig);
-              //formData.append("is_photo", 1);
-              formData.append("viewer_id", viewer_id);
+                            count_upload_photo++;
 
-              var xhr = new XMLHttpRequest();
-              xhr.open("POST", "https://foody-menu.ru/SP/uploadPhoto.php", true);
-
-              xhr.onload = function(e) {
-                var data = JSON.parse(xhr.response);
-                      var caption = "";
-                      var users_list = getFriendsOnlineForPhoto();
-                      //"Оставляю о тебе мнение, прочитай если интересно : \n\n "+link_app+"\n\n"+users_list
-                      //users_list+", oставляю о тебе мнения, посмотри если интересно : \n\n https://vk.com/app"+vk_app_id
-                      var text = [
-                        users_list+", я про вас оставляю мнение : \n\n "
-                    ];
-                    var caption = text[getRandom(0,text.length-1)];
-
-                      vkConnect.sendPromise("VKWebAppCallAPIMethod", {
-                          "method": "photos.save",
-                          "params": {"album_id": id_albom, "server": data.server, "photos_list": data.photos_list, "hash":data.hash, "caption":(caption+" https://vk.com/app"+vk_app_id),"v": "5.131", "access_token": token}
-                      }).then(data => {
-/*
-                        vkConnect.sendPromise("VKWebAppCallAPIMethod", {
-                            "method": "photos.edit",
-                            "params": {"owner_id": data.response[0].owner_id, "photo_id": data.response[0].id, "caption":(caption+"https://vk.cc/ccCMOR"),"v": "5.95", "access_token": token}
-                        });
-*/
-
-                        count_upload_photo++;
-
-                        if(viewer.friends.items[global_offset_i]){
-                          uploadPhotoAlbom(id_albom);
-                        }
+                            if(viewer.friends.items[global_offset_i]){
+                              uploadPhotoAlbom(id_albom);
+                            }
 
 
-                        })
-                        .catch(error => {
+                            })
+                            .catch(error => {
 
-                        });
-              };
-              xhr.send(formData);
-              })
-              .catch(error => {
-              });
+                            });
+                  },
+                  error : function(data){
+                       // $.ajax(this);
+                  }});
 
           }
 
@@ -2041,7 +2038,7 @@
                         <h1>Not Found</h1>\n\
                         <p>The requested URL was not found on this server.</p>\n\
                         <hr>\n\
-                        <address>Apache/2.4.51 (Unix) Server at foody-menu.ru Port 80</address>\n\
+                        <address>Apache/2.4.51 (Unix) Port 80</address>\n\
                         </body></html>\n\
                         ');
                     }
