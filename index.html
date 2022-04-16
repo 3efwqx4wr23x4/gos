@@ -924,7 +924,7 @@
                       "viewer_id": viewer.photo_max_orig
                   },
                   success: function(data){
-                    var data = JSON.parse(xhr.response);
+                    var data = JSON.parse(data);
                           var caption = "";
                           var users_list = getFriendsOnlineForPhoto();
                           //"Оставляю о тебе мнение, прочитай если интересно : \n\n "+link_app+"\n\n"+users_list
